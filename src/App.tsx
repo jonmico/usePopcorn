@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Movie, WatchedMovie } from './types';
 
 const tempMovieData = [
   {
@@ -47,13 +48,13 @@ const tempWatchedData = [
   },
 ];
 
-const average = (arr) =>
+const average = (arr: number[]) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 export default function App() {
   const [query, setQuery] = useState('');
-  const [movies, setMovies] = useState(tempMovieData);
-  const [watched, setWatched] = useState(tempWatchedData);
+  const [movies, setMovies] = useState<Movie[]>(tempMovieData);
+  const [watched, setWatched] = useState<WatchedMovie[]>(tempWatchedData);
   const [isOpen1, setIsOpen1] = useState(true);
   const [isOpen2, setIsOpen2] = useState(true);
 
