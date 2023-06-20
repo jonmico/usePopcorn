@@ -52,17 +52,11 @@ const average = (arr: number[]) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
 interface NavbarProps {
-  movies: Movie[];
+  children: React.ReactNode;
 }
 
-function Navbar({ movies }: NavbarProps) {
-  return (
-    <nav className='nav-bar'>
-      <Logo />
-      <Search />
-      <NumResults movies={movies} />
-    </nav>
-  );
+function Navbar({ children }: NavbarProps) {
+  return <nav className='nav-bar'>{children}</nav>;
 }
 
 interface NumResultsProps {
@@ -100,21 +94,17 @@ function Search() {
 }
 
 interface MainProps {
-  movies: Movie[];
+  children: React.ReactNode;
 }
-function Main({ movies }: MainProps) {
-  return (
-    <main className='main'>
-      <ListBox movies={movies} />
-      <WatchedBox />
-    </main>
-  );
+function Main({ children }: MainProps) {
+  return <main className='main'>{children}</main>;
 }
 
 interface ListBoxProps {
-  movies: Movie[];
+  children: React.ReactNode;
 }
-function ListBox({ movies }: ListBoxProps) {
+
+function ListBox({ children }: ListBoxProps) {
   const [isOpen1, setIsOpen1] = useState(true);
 
   return (
@@ -125,7 +115,7 @@ function ListBox({ movies }: ListBoxProps) {
       >
         {isOpen1 ? '–' : '+'}
       </button>
-      {isOpen1 && <MovieList movies={movies} />}
+      {isOpen1 && children}
     </div>
   );
 }
@@ -265,8 +255,17 @@ export default function App() {
 
   return (
     <>
-      <Navbar movies={movies} />
-      <Main movies={movies} />
+      <Navbar>
+        <Logo />
+        <Search />
+        <NumResults movies={movies} />
+      </Navbar>
+      <Main>
+        <ListBox>
+          <MovieList movies={movies} />
+        </ListBox>
+        <WatchedBox />
+      </Main>
     </>
   );
 }
