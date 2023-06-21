@@ -21,6 +21,7 @@ interface StarRatingProps {
 
 export default function StarRating({ maxRating = 4 }: StarRatingProps) {
   const [rating, setRating] = useState(0);
+  const [tempRating, setTempRating] = useState(0);
 
   function handleRating(rating: number) {
     setRating(rating);
@@ -30,10 +31,16 @@ export default function StarRating({ maxRating = 4 }: StarRatingProps) {
     <div style={containerStyle}>
       <div style={starContainerStyle}>
         {Array.from({ length: maxRating }, (_, i) => (
-          <Star key={i} onRate={() => handleRating(i + 1)} full={rating > i} />
+          <Star
+            key={i}
+            onRate={() => handleRating(i + 1)}
+            full={tempRating ? tempRating > i : rating > i}
+            onHoverIn={() => setTempRating(i + 1)}
+            onHoverOut={() => setTempRating(0)}
+          />
         ))}
       </div>
-      <p style={textStyle}>{rating || ''}</p>
+      <p style={textStyle}>{tempRating || rating || ''}</p>
     </div>
   );
 }
@@ -47,12 +54,20 @@ const starStyle = {
 
 interface StarProps {
   onRate: () => void;
+  onHoverIn: () => void;
+  onHoverOut: () => void;
   full: boolean;
 }
 
-function Star({ onRate, full }: StarProps) {
+function Star({ onRate, full, onHoverIn, onHoverOut }: StarProps) {
   return (
-    <span onClick={onRate} role='button' style={starStyle}>
+    <span
+      onClick={onRate}
+      onMouseEnter={onHoverIn}
+      onMouseLeave={onHoverOut}
+      role='button'
+      style={starStyle}
+    >
       {full ? (
         <svg
           xmlns='http://www.w3.org/2000/svg'
