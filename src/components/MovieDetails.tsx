@@ -1,19 +1,44 @@
 import { useEffect, useState } from 'react';
 import { KEY } from '../../config.json';
+import { WatchedMovie } from '../types';
 import StarRating from '../StarRating';
 import Loader from './Loader';
 
 interface MovieDetailsProps {
   selectedId: string;
+  watched: WatchedMovie[];
   onCloseMovie: () => void;
+  onAddWatched: (movie: WatchedMovie) => void;
 }
 
 export default function MovieDetails({
   selectedId,
+  watched,
   onCloseMovie,
+  onAddWatched,
 }: MovieDetailsProps) {
   const [movie, setMovie] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+
+  const indexOfRated = watched.findIndex(
+    (movie) => movie.imdbID === selectedId
+  );
+
+  function handleAdd() {
+    const newWatchedMovie: WatchedMovie = {
+      imdbRating: Number(imdbRating),
+      imdbID: selectedId,
+      title,
+      year,
+      poster,
+      runtime: Number(runtime.split(' ').at(0)),
+      userRating,
+    };
+
+    onAddWatched(newWatchedMovie);
+    onCloseMovie();
+  }
 
   const {
     Title: title,
@@ -66,8 +91,21 @@ export default function MovieDetails({
           </header>
           <section>
             <div className='rating'>
-              <StarRating maxRating={10} size={24} />
+              {indexOfRated === -1 ? (
+                <StarRating
+                  maxRating={10}
+                  size={24}
+                  onSetRating={setUserRating}
+                />
+              ) : (
+                <p>You rated this movie {watched[indexOfRated].userRating}.</p>
+              )}
             </div>
+            {userRating > 0 && (
+              <button className='btn-add' onClick={handleAdd}>
+                + Add to list
+              </button>
+            )}
 
             <p>
               <em>{plot}</em>
