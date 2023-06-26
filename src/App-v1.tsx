@@ -1,14 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Movie, WatchedMovie } from './types';
-import { KEY } from '../config.json';
-
-import MovieDetails from './components/MovieDetails';
-import Loader from './components/Loader';
-import ErrorMessage from './components/ErrorMessage';
-import Navbar from './components/Navbar';
-import NumResults from './components/NumResults';
-import Logo from './components/Logo';
-import Search from './components/Search';
 
 const tempMovieData = [
   {
@@ -60,6 +51,48 @@ const tempWatchedData = [
 const average = (arr: number[]) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
+interface NavbarProps {
+  children: React.ReactNode;
+}
+
+function Navbar({ children }: NavbarProps) {
+  return <nav className='nav-bar'>{children}</nav>;
+}
+
+interface NumResultsProps {
+  movies: Movie[];
+}
+
+function NumResults({ movies }: NumResultsProps) {
+  return (
+    <p className='num-results'>
+      Found <strong>{movies.length}</strong> results
+    </p>
+  );
+}
+
+function Logo() {
+  return (
+    <div className='logo'>
+      <span role='img'>🍿</span>
+      <h1>usePopcorn</h1>
+    </div>
+  );
+}
+
+function Search() {
+  const [query, setQuery] = useState('');
+  return (
+    <input
+      className='search'
+      type='text'
+      placeholder='Search movies...'
+      value={query}
+      onChange={(e) => setQuery(e.target.value)}
+    />
+  );
+}
+
 interface MainProps {
   children: React.ReactNode;
 }
@@ -86,18 +119,13 @@ function Box({ children }: ListBoxProps) {
 
 interface MovieListProps {
   movies: Movie[];
-  onSelectMovie: (id: string) => void;
 }
 
-function MovieList({ movies, onSelectMovie }: MovieListProps) {
+function MovieList({ movies }: MovieListProps) {
   return (
-    <ul className='list list-movies'>
+    <ul className='list'>
       {movies?.map((movie) => (
-        <MovieItem
-          key={movie.imdbID}
-          movie={movie}
-          onSelectMovie={onSelectMovie}
-        />
+        <MovieItem key={movie.imdbID} movie={movie} />
       ))}
     </ul>
   );
@@ -105,12 +133,11 @@ function MovieList({ movies, onSelectMovie }: MovieListProps) {
 
 interface MovieItemProps {
   movie: Movie;
-  onSelectMovie: (id: string) => void;
 }
 
-function MovieItem({ movie, onSelectMovie }: MovieItemProps) {
+function MovieItem({ movie }: MovieItemProps) {
   return (
-    <li onClick={() => onSelectMovie(movie.imdbID)}>
+    <li>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -199,87 +226,23 @@ function WatchedMovieItem({ movie }: WatchedMovieItemProps) {
 }
 
 export default function App() {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [watched, setWatched] = useState<WatchedMovie[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [query, setQuery] = useState('inception');
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const tempQuery = 'interstellar';
-
-  function handleSelectMovie(id: string) {
-    setSelectedId((s) => (id === s ? null : id));
-  }
-
-  function handleCloseMovie() {
-    setSelectedId(null);
-  }
-
-  useEffect(() => {
-    async function fetchMovies() {
-      try {
-        setIsLoading(true);
-        setError('');
-        const res = await fetch(
-          `http://www.omdbapi.com/?s=${query}&apikey=${KEY}`
-        );
-
-        if (!res.ok)
-          throw new Error('something went wrong with fetching movies');
-
-        const data = await res.json();
-
-        if (data.Response === 'False') throw new Error('Movie not found');
-
-        setMovies(data.Search);
-      } catch (err) {
-        if (err instanceof Error) {
-          console.log(err.message);
-          setError(err.message);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (query.length < 3) {
-      setMovies([]);
-      setError('');
-      return;
-    }
-    fetchMovies();
-  }, [query]);
+  const [movies, setMovies] = useState<Movie[]>(tempMovieData);
+  const [watched, setWatched] = useState<WatchedMovie[]>(tempWatchedData);
 
   return (
     <>
       <Navbar>
         <Logo />
-        <Search query={query} setQuery={setQuery} />
+        <Search />
         <NumResults movies={movies} />
       </Navbar>
       <Main>
         <Box>
-          {/* {isLoading ? <Loader /> : <MovieList movies={movies} />} */}
-          {isLoading && <Loader />}
-          {!isLoading && !error && (
-            <MovieList movies={movies} onSelectMovie={handleSelectMovie} />
-          )}
-          {error && <ErrorMessage message={error} />}
+          <MovieList movies={movies} />
         </Box>
         <Box>
-          {selectedId ? (
-            <MovieDetails
-              key={selectedId}
-              onCloseMovie={handleCloseMovie}
-              selectedId={selectedId}
-            />
-          ) : (
-            <>
-              <WatchedSummary watched={watched} />
-              <WatchedMovieList watched={watched} />
-            </>
-          )}
+          <WatchedSummary watched={watched} />
+          <WatchedMovieList watched={watched} />
         </Box>
       </Main>
     </>
