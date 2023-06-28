@@ -8,5 +8,6 @@ export type Movie = {
 export type WatchedMovie = Movie & {
   runtime: number;
   imdbRating: number;
-  userRating?: number;
+  userRating: number;
+  countRatingDecisions?: number;
 };

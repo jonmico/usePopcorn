@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { KEY } from '../../config.json';
 import { WatchedMovie } from '../types';
 import StarRating from '../StarRating';
@@ -21,9 +21,17 @@ export default function MovieDetails({
   const [isLoading, setIsLoading] = useState(false);
   const [userRating, setUserRating] = useState(0);
 
+  const countRef = useRef(0);
+
+  useEffect(() => {
+    if (userRating) countRef.current++;
+  }, [userRating]);
+
   const indexOfRated = watched.findIndex(
     (movie) => movie.imdbID === selectedId
   );
+
+  // const [avgRating, setAvgRating] = useState(0);
 
   function handleAdd() {
     const newWatchedMovie: WatchedMovie = {
@@ -34,10 +42,13 @@ export default function MovieDetails({
       poster,
       runtime: Number(runtime.split(' ').at(0)),
       userRating,
+      countRatingDecisions: countRef.current,
     };
 
     onAddWatched(newWatchedMovie);
     onCloseMovie();
+    // setAvgRating(Number(imdbRating));
+    // setAvgRating((currAvgRating) => (currAvgRating + userRating) / 2);
   }
 
   const {
@@ -54,6 +65,19 @@ export default function MovieDetails({
   } = movie;
 
   useEffect(() => {
+    function callback(evt: KeyboardEvent) {
+      if (evt.code === 'Escape') {
+        onCloseMovie();
+      }
+    }
+    document.addEventListener('keydown', callback);
+
+    return () => {
+      document.removeEventListener('keydown', callback);
+    };
+  }, [onCloseMovie]);
+
+  useEffect(() => {
     async function getMovieDetails() {
       setIsLoading(true);
       const res = await fetch(
@@ -65,6 +89,15 @@ export default function MovieDetails({
     }
     getMovieDetails();
   }, [selectedId]);
+
+  useEffect(() => {
+    if (!title) return;
+    document.title = `Movie | ${title}`;
+
+    return () => {
+      document.title = 'usePopcorn';
+    };
+  }, [title]);
 
   return (
     <div className='details'>
@@ -89,6 +122,7 @@ export default function MovieDetails({
               </p>
             </div>
           </header>
+          {/* <p>{avgRating}</p> */}
           <section>
             <div className='rating'>
               {indexOfRated === -1 ? (
