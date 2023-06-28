@@ -3,6 +3,7 @@ import { KEY } from '../../config.json';
 import { WatchedMovie } from '../types';
 import StarRating from '../StarRating';
 import Loader from './Loader';
+import { useKey } from '../useKey';
 
 interface MovieDetailsProps {
   selectedId: string;
@@ -64,18 +65,7 @@ export default function MovieDetails({
     Genre: genre,
   } = movie;
 
-  useEffect(() => {
-    function callback(evt: KeyboardEvent) {
-      if (evt.code === 'Escape') {
-        onCloseMovie();
-      }
-    }
-    document.addEventListener('keydown', callback);
-
-    return () => {
-      document.removeEventListener('keydown', callback);
-    };
-  }, [onCloseMovie]);
+  useKey('Escape', onCloseMovie);
 
   useEffect(() => {
     async function getMovieDetails() {
