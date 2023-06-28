@@ -9,6 +9,7 @@ import NumResults from './components/NumResults';
 import Logo from './components/Logo';
 import Search from './components/Search';
 import { useMovies } from './useMovies';
+import { useLocalStorageState } from './useLocalStorageState';
 
 const average = (arr: number[]) =>
   arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
@@ -161,18 +162,14 @@ function WatchedMovieItem({ movie, onDeleteWatched }: WatchedMovieItemProps) {
 }
 
 export default function App() {
-  const [watched, setWatched] = useState<WatchedMovie[]>(() => {
-    const storedValue = localStorage.getItem('watched');
-    if (!storedValue) {
-      return [];
-    }
-    return JSON.parse(storedValue);
-  });
-
   const [query, setQuery] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { movies, isLoading, error } = useMovies(query, handleCloseMovie);
+  const [watched, setWatched] = useLocalStorageState<WatchedMovie[]>(
+    [],
+    'watched'
+  );
 
   function handleSelectMovie(id: string) {
     setSelectedId((s) => (id === s ? null : id));
@@ -183,20 +180,14 @@ export default function App() {
   }
 
   function handleAddWatched(movie: WatchedMovie) {
-    setWatched((watched) => [...watched, movie]);
-
-    // localStorage.setItem('watched', JSON.stringify([...watched, movie]));
+    setWatched((currWatched: WatchedMovie[]) => [...currWatched, movie]);
   }
 
   function handleDeleteWatched(movie: WatchedMovie) {
-    setWatched((currWatched) =>
+    setWatched((currWatched: WatchedMovie[]) =>
       currWatched.filter((watchedMovie) => watchedMovie.imdbID !== movie.imdbID)
     );
   }
-
-  useEffect(() => {
-    localStorage.setItem('watched', JSON.stringify(watched));
-  }, [watched]);
 
   return (
     <>
